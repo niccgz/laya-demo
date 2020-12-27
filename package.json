@@ -1,0 +1,13 @@
+{
+  "name": "LayaDemo",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "compile": "layaair2-cmd compile",
+    "preview": "sh ./tools/preview.sh",
+    "ui-clear": "layaair2-cmd ui -c -m release",
+    "ui-export": "layaair2-cmd ui -d",
+    "ui": "yarn ui-clear & yarn ui-export"
+  }
+}
