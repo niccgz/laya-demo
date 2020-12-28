@@ -4,8 +4,8 @@ import DemoScene from "./script/scenes/DemoScene"
 * 游戏初始化配置;
 */
 export default class GameConfig{
-    static width:number=750;
-    static height:number=1334;
+    static width:number=1334;
+    static height:number=750;
     static scaleMode:string="fixedheight";
     static screenMode:string="horizontal";
     static alignV:string="middle";

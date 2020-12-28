@@ -16,20 +16,6 @@
     "child":[
         {
             "x":15,
-            "type":"Button",
-            "searchKey":"Button",
-            "props":{"y":289,"x":467,"skin":"comp/button.png","scaleY":3,"scaleX":3,"label":"label"},
-            "nodeParent":2,
-            "label":"Button",
-            "isDirectory":false,
-            "isAniNode":true,
-            "hasChild":false,
-            "compId":3,
-            "child":[
-                ]
-        },
-        {
-            "x":15,
             "type":"Script",
             "switchAble":true,
             "source":"src/script/scenes/DemoScene.ts",

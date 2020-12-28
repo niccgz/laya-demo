@@ -2,7 +2,7 @@ import GameConfig from "./GameConfig";
 class Main {
 	constructor() {
 		//根据IDE设置初始化引擎		
-		if (window["Laya3D"]) Laya3D.init(GameConfig.width, GameConfig.height);
+		if (window["Laya3D" as any]) Laya3D.init(GameConfig.width, GameConfig.height);
 		else Laya.init(GameConfig.width, GameConfig.height, Laya["WebGL"]);
 		Laya["Physics"] && Laya["Physics"].enable();
 		Laya.stage.scaleMode = GameConfig.scaleMode;

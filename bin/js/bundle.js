@@ -1,23 +1,19 @@
 (function () {
     'use strict';
 
-    class CameraMoveScript extends Laya.Script3D {
+    class CameraMove extends Laya.Script3D {
         constructor() {
-            super();
+            super(...arguments);
             this._tempVector3 = new Laya.Vector3();
+            this.lastMouseX = 0;
+            this.lastMouseY = 0;
             this.yawPitchRoll = new Laya.Vector3();
             this.resultRotation = new Laya.Quaternion();
             this.tempRotationZ = new Laya.Quaternion();
             this.tempRotationX = new Laya.Quaternion();
             this.tempRotationY = new Laya.Quaternion();
+            this.isMouseDown = false;
             this.rotaionSpeed = 0.00006;
-        }
-        _updateRotation() {
-            if (Math.abs(this.yawPitchRoll.y) < 1.50) {
-                Laya.Quaternion.createFromYawPitchRoll(this.yawPitchRoll.x, this.yawPitchRoll.y, this.yawPitchRoll.z, this.tempRotationZ);
-                this.tempRotationZ.cloneTo(this.camera.transform.localRotation);
-                this.camera.transform.localRotation = this.camera.transform.localRotation;
-            }
         }
         onAwake() {
             Laya.stage.on(Laya.Event.MOUSE_DOWN, this, this.mouseDown);
@@ -44,11 +40,21 @@
             this.lastMouseX = Laya.stage.mouseX;
             this.lastMouseY = Laya.stage.mouseY;
         }
+        _updateRotation() {
+            if (this.camera && Math.abs(this.yawPitchRoll.y) < 1.50) {
+                Laya.Quaternion.createFromYawPitchRoll(this.yawPitchRoll.x, this.yawPitchRoll.y, this.yawPitchRoll.z, this.tempRotationZ);
+                this.tempRotationZ.cloneTo(this.camera.transform.localRotation);
+                this.camera.transform.localRotation = this.camera.transform.localRotation;
+            }
+        }
         onDestroy() {
             Laya.stage.off(Laya.Event.RIGHT_MOUSE_DOWN, this, this.mouseDown);
             Laya.stage.off(Laya.Event.RIGHT_MOUSE_UP, this, this.mouseUp);
         }
         mouseDown(e) {
+            if (!this.camera || !this.camera.transform) {
+                return;
+            }
             this.camera.transform.localRotation.getYawPitchRoll(this.yawPitchRoll);
             this.lastMouseX = Laya.stage.mouseX;
             this.lastMouseY = Laya.stage.mouseY;
@@ -61,62 +67,45 @@
             this.isMouseDown = false;
         }
         moveForward(distance) {
-            this._tempVector3.x = this._tempVector3.y = 0;
-            this._tempVector3.z = distance;
-            this.camera.transform.translate(this._tempVector3);
+            if (this.camera) {
+                this._tempVector3.x = this._tempVector3.y = 0;
+                this._tempVector3.z = distance;
+                this.camera.transform.translate(this._tempVector3);
+            }
         }
         moveRight(distance) {
-            this._tempVector3.y = this._tempVector3.z = 0;
-            this._tempVector3.x = distance;
-            this.camera.transform.translate(this._tempVector3);
+            if (this.camera) {
+                this._tempVector3.y = this._tempVector3.z = 0;
+                this._tempVector3.x = distance;
+                this.camera.transform.translate(this._tempVector3);
+            }
         }
         moveVertical(distance) {
-            this._tempVector3.x = this._tempVector3.z = 0;
-            this._tempVector3.y = distance;
-            this.camera.transform.translate(this._tempVector3, false);
+            if (this.camera) {
+                this._tempVector3.x = this._tempVector3.z = 0;
+                this._tempVector3.y = distance;
+                this.camera.transform.translate(this._tempVector3, false);
+            }
         }
     }
 
-    class Load3DAssetDemo extends Laya.Script {
-        onAwake() {
-            Laya.Scene3D.load("res/d3/TerrainScene/XunLongShi.ls", Laya.Handler.create(null, (scene) => {
+    class RenderTargetCamera extends Laya.Script {
+        onStart() {
+            Laya.Scene3D.load("res/d3/scene/CourtyardScene/Courtyard.ls", Laya.Handler.create(this, (scene) => {
                 Laya.stage.addChild(scene);
-                let camera = scene.getChildByName("Main Camera");
+                let camera = scene.addChild(new Laya.Camera(0, 0.1, 1000));
+                camera.transform.translate(new Laya.Vector3(57, 2.5, 58));
+                camera.transform.rotate(new Laya.Vector3(-10, 150, 0), true, false);
                 camera.clearFlag = Laya.CameraClearFlags.Sky;
-                camera.addComponent(CameraMoveScript);
-                let directionLight = scene.addChild(new Laya.DirectionLight());
-                directionLight.color = new Laya.Vector3(1, 1, 1);
-                directionLight.transform.rotate(new Laya.Vector3(-3.14 / 3, 0, 0));
-                Laya.Material.load("res/d3/skyBox/skyBox2/skyBox2.lmat", Laya.Handler.create(null, (mat) => {
-                    let skyRender = camera.skyRenderer;
-                    skyRender.mesh = Laya.SkyBox.instance;
-                    skyRender.material = mat;
-                }));
-                Laya.Texture2D.load("res/d3/textures/earth.png", Laya.Handler.create(null, (texture) => {
-                    let earth = scene.addChild(new Laya.MeshSprite3D(Laya.PrimitiveMesh.createSphere(5, 32, 32)));
-                    earth.transform.translate(new Laya.Vector3(-10, 10, 0));
-                    let earthMaterail = new Laya.BlinnPhongMaterial();
-                    earthMaterail.albedoTexture = texture;
-                    earthMaterail.albedoIntensity = 1;
-                    earth.meshRenderer.material = earthMaterail;
-                }));
-                Laya.Sprite3D.load("res/d3/skinModel/BoneLinkScene/PangZiNoAni.lh", Laya.Handler.create(null, (prefab) => {
-                    let panzi = scene.addChild(prefab);
-                    panzi.transform.localScale = new Laya.Vector3(2, 2, 2);
-                    panzi.transform.translate(new Laya.Vector3(0, 8, -10));
-                    panzi.transform.rotate(new Laya.Vector3(0, 180, 0), true, false);
-                    let animator = panzi.getChildAt(0).getComponent(Laya.Animator);
-                    Laya.AnimationClip.load("res/d3/skinModel/BoneLinkScene/Assets/Model3D/PangZi-Take 001.lani", Laya.Handler.create(null, (clip) => {
-                        let state = new Laya.AnimatorState();
-                        state.name = "Hello";
-                        state.clipStart = 0 / 581;
-                        state.clipEnd = 581 / 581;
-                        state.clip = clip;
-                        state.clip.islooping = true;
-                        animator.getControllerLayer(0).addState(state);
-                        animator.play("Hello");
-                    }));
-                }));
+                camera.addComponent(CameraMove);
+                let renderTargetCamera = scene.addChild(new Laya.Camera(0, 0.1, 1000));
+                renderTargetCamera.transform.translate(new Laya.Vector3(57, 2.5, 58));
+                renderTargetCamera.transform.rotate(new Laya.Vector3(-10, 150, 0), true, false);
+                renderTargetCamera.renderTarget = new Laya.RenderTexture(2048, 2048);
+                renderTargetCamera.renderingOrder = -1;
+                renderTargetCamera.addComponent(CameraMove);
+                let renderTargetObj = scene.getChildAt(0).getChildByName("RenderTarget");
+                renderTargetObj.meshRenderer.material.albedoTexture = renderTargetCamera.renderTarget;
             }));
         }
     }
@@ -124,7 +113,7 @@
     class DemoScene extends Laya.Script {
         onEnable() {
             this.owner.removeChildren();
-            this.owner.addComponent(Load3DAssetDemo);
+            this.owner.addComponent(RenderTargetCamera);
         }
         onDisable() {
         }
@@ -137,8 +126,8 @@
             reg("script/scenes/DemoScene.ts", DemoScene);
         }
     }
-    GameConfig.width = 750;
-    GameConfig.height = 1334;
+    GameConfig.width = 1334;
+    GameConfig.height = 750;
     GameConfig.scaleMode = "fixedheight";
     GameConfig.screenMode = "horizontal";
     GameConfig.alignV = "middle";

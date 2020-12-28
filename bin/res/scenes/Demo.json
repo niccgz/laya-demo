@@ -1,1 +1,1 @@
-{"type":"Scene","props":{"width":1334,"height":750},"compId":2,"child":[{"type":"Button","props":{"y":289,"x":467,"skin":"comp/button.png","scaleY":3,"scaleX":3,"label":"label"},"compId":3},{"type":"Script","props":{"runtime":"script/scenes/DemoScene.ts"},"compId":5}],"loadList":["comp/button.png"],"loadList3D":[]}
+{"type":"Scene","props":{"width":1334,"height":750},"compId":2,"child":[{"type":"Script","props":{"runtime":"script/scenes/DemoScene.ts"},"compId":5}],"loadList":[],"loadList3D":[]}
