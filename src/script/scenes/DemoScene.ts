@@ -1,4 +1,5 @@
 import CameraRay from "../cases/CameraRay";
+import DirectionLight from "../cases/DirectionLight";
 import EnvironmentalReflection from "../cases/EnvironmentalReflection";
 import GarbageCollection from "../cases/GarbageCollection";
 import Load3DAssetDemo from "../cases/Load3DAssetDemo";
@@ -19,7 +20,8 @@ export default class DemoScene extends Laya.Script {
         // this.owner.addComponent(SceneLoad);
         // this.owner.addComponent(EnvironmentalReflection);
         // this.owner.addComponent(CameraRay);
-        this.owner.addComponent(RenderTargetCamera);
+        // this.owner.addComponent(RenderTargetCamera);
+        this.owner.addComponent(DirectionLight);
     }
 
     onDisable(): void {

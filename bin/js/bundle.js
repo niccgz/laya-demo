@@ -89,23 +89,45 @@
         }
     }
 
-    class RenderTargetCamera extends Laya.Script {
+    class DirectionLight extends Laya.Script {
+        constructor() {
+            super(...arguments);
+            this._quaternion = new Laya.Quaternion();
+            this._direction = new Laya.Vector3();
+        }
         onStart() {
-            Laya.Scene3D.load("res/d3/scene/CourtyardScene/Courtyard.ls", Laya.Handler.create(this, (scene) => {
-                Laya.stage.addChild(scene);
-                let camera = scene.addChild(new Laya.Camera(0, 0.1, 1000));
-                camera.transform.translate(new Laya.Vector3(57, 2.5, 58));
-                camera.transform.rotate(new Laya.Vector3(-10, 150, 0), true, false);
-                camera.clearFlag = Laya.CameraClearFlags.Sky;
-                camera.addComponent(CameraMove);
-                let renderTargetCamera = scene.addChild(new Laya.Camera(0, 0.1, 1000));
-                renderTargetCamera.transform.translate(new Laya.Vector3(57, 2.5, 58));
-                renderTargetCamera.transform.rotate(new Laya.Vector3(-10, 150, 0), true, false);
-                renderTargetCamera.renderTarget = new Laya.RenderTexture(2048, 2048);
-                renderTargetCamera.renderingOrder = -1;
-                renderTargetCamera.addComponent(CameraMove);
-                let renderTargetObj = scene.getChildAt(0).getChildByName("RenderTarget");
-                renderTargetObj.meshRenderer.material.albedoTexture = renderTargetCamera.renderTarget;
+            let scene = Laya.stage.addChild(new Laya.Scene3D());
+            let camera = scene.addChild(new Laya.Camera(0, 0.1, 1000));
+            camera.transform.translate(new Laya.Vector3(0, 0.7, 1.3));
+            camera.transform.rotate(new Laya.Vector3(-15, 0, 0), true, false);
+            camera.addComponent(CameraMove);
+            let directionLight = scene.addChild(new Laya.DirectionLight());
+            directionLight.color = new Laya.Vector3(1, 1, 1);
+            let matrix = directionLight.transform.worldMatrix;
+            matrix.setForward(new Laya.Vector3(-1.0, -1.0, -1.0));
+            directionLight.transform.worldMatrix = matrix;
+            Laya.MeshSprite3D.load("res/d3/staticModel/grid/plane.lh", Laya.Handler.create(this, (sprite) => {
+                let grid = scene.addChild(sprite);
+                Laya.MeshSprite3D.load("res/d3/skinModel/LayaMonkey/LayaMonkey.lh", Laya.Handler.create(this, (monkey) => {
+                    let layaMonkey = scene.addChild(monkey);
+                    let aniSp = layaMonkey.getChildAt(0);
+                    let animator = aniSp.getComponent(Laya.Animator);
+                    let state = new Laya.AnimatorState();
+                    state.name = "run";
+                    state.clipStart = 40 / 150;
+                    state.clipEnd = 70 / 150;
+                    state.clip = animator.getDefaultState().clip;
+                    animator.addState(state);
+                    Laya.timer.frameLoop(1, this, () => {
+                        Laya.Quaternion.createFromYawPitchRoll(0.025, 0, 0, this._quaternion);
+                        directionLight.transform.worldMatrix.getForward(this._direction);
+                        Laya.Vector3.transformQuat(this._direction, this._quaternion, this._direction);
+                        directionLight.transform.worldMatrix.setForward(this._direction);
+                        let mat = directionLight.transform.worldMatrix;
+                        mat.setForward(this._direction);
+                        directionLight.transform.worldMatrix = mat;
+                    });
+                }));
             }));
         }
     }
@@ -113,7 +135,7 @@
     class DemoScene extends Laya.Script {
         onEnable() {
             this.owner.removeChildren();
-            this.owner.addComponent(RenderTargetCamera);
+            this.owner.addComponent(DirectionLight);
         }
         onDisable() {
         }
